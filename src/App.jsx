@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { toast, Toaster } from "sonner";
 import {
     Camera,
     Copy,
@@ -83,6 +84,8 @@ const STYLES = [
 ];
 
 const SUBJECTS = ["person", "product", "landscape", "object", "animal"];
+const PERSONS = ["", "No Change", "Less Change", "Full Change"];
+const FORMATS = ["1:1", "16:9", "9:16", "4:3"];
 
 const PRESETS = {
     cinematic: {
@@ -96,6 +99,8 @@ const PRESETS = {
         artificialLight: "warm continuous light",
         style: "cinematic",
         subject: "person",
+        format: "16:9",
+        person: "Less Change",
     },
     product: {
         camera: "Canon R5",
@@ -108,6 +113,8 @@ const PRESETS = {
         artificialLight: "3-point lighting",
         style: "studio product clean",
         subject: "product",
+        format: "1:1",
+        person: "Full Change",
     },
     portrait: {
         camera: "Sony A7IV",
@@ -120,6 +127,8 @@ const PRESETS = {
         artificialLight: "softbox side",
         style: "professional portrait",
         subject: "person",
+        format: "9:16",
+        person: "No Change",
     },
 };
 
@@ -159,6 +168,7 @@ export default function App() {
         artificialLight: "softbox side",
         style: "professional portrait",
         subject: "person",
+        format: "9:16",
     });
 
     const jsonOutput = useMemo(() => buildJson(config), [config]);
@@ -168,6 +178,7 @@ export default function App() {
 
     const copyJson = async () => {
         await navigator.clipboard.writeText(jsonString);
+        toast.success("JSON copied to clipboard!");
     };
 
     const [activePreset, setActivePreset] = useState("portrait");
@@ -464,8 +475,8 @@ export default function App() {
                                             description="Define visual intent and what the photographic setup is shooting."
                                             icon={Sparkles}
                                         >
-                                            <div className="grid gap-6 md:grid-cols-2">
-                                                <div className="space-y-2">
+                                            <div className="grid gap-6 md:grid-cols-4">
+                                                <div className="space-y-1">
                                                     <Label>Style</Label>
                                                     <Select value={config.style} onValueChange={(value) => updateConfig("style", value)}>
                                                         <SelectTrigger>
@@ -481,7 +492,7 @@ export default function App() {
                                                     </Select>
                                                 </div>
 
-                                                <div className="space-y-2">
+                                                <div className="space-y-1">
                                                     <Label>Subject</Label>
                                                     <Select value={config.subject} onValueChange={(value) => updateConfig("subject", value)}>
                                                         <SelectTrigger>
@@ -489,6 +500,36 @@ export default function App() {
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             {SUBJECTS.map((item) => (
+                                                                <SelectItem key={item} value={item}>
+                                                                    {item}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Label>Person</Label>
+                                                    <Select value={config.person} onValueChange={(value) => updateConfig("person", value)}>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select person" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {PERSONS.map((item) => (
+                                                                <SelectItem key={item} value={item}>
+                                                                    {item}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Label>Format</Label>
+                                                    <Select value={config.format} onValueChange={(value) => updateConfig("format", value)}>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select format" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {FORMATS.map((item) => (
                                                                 <SelectItem key={item} value={item}>
                                                                     {item}
                                                                 </SelectItem>
@@ -504,8 +545,6 @@ export default function App() {
                         </div>
 
                         <div className="space-y-6">
-                            <PhotoSetupPreview config={config} darkMode={darkMode} />
-
                             <Card className="border-zinc-200/80 shadow-sm dark:border-zinc-800">
                                 <CardHeader>
                                     <CardTitle>JSON prompt output</CardTitle>
@@ -549,9 +588,11 @@ export default function App() {
                                     </div>
                                 </CardContent>
                             </Card>
+                            <PhotoSetupPreview config={config} darkMode={darkMode} />
                         </div>
                     </motion.div>
                 </div>
+            <Toaster duration={2000} />
             </div>
         </div>
     );
